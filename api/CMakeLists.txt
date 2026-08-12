@@ -1,0 +1,3 @@
+add_library(quant_trading_api STATIC src/quant_trading_api.cpp)
+target_include_directories(quant_trading_api PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(quant_trading_api PUBLIC quant_trading nlohmann_json)

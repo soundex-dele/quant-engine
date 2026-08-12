@@ -1,0 +1,95 @@
+{
+  "name": "quant-trading-workflow",
+  "description": "Single-symbol paper-trading tick workflow. QuantFlowToken is the only graph-edge payload; conditions select branches.",
+  "nodes": [
+    {"id": "strategy_control", "class": "QuantStrategyControlNode"},
+    {"id": "market_ingress", "class": "QuantMarketIngressNode"},
+    {"id": "calculate_indicator", "class": "QuantIndicatorNode"},
+    {"id": "generate_signal", "class": "QuantSignalNode", "params": {"epsilon": 1e-9}},
+    {"id": "check_risk", "class": "QuantRiskNode"},
+    {"id": "create_order", "class": "QuantOrderNode"},
+    {"id": "execute_order", "class": "QuantExecutionNode"},
+    {"id": "update_portfolio", "class": "QuantPortfolioNode"},
+    {"id": "persist_snapshot", "class": "QuantPersistenceNode"},
+    {"id": "cycle_complete", "class": "QuantCycleCompleteNode"},
+    {"id": "failure_terminal", "class": "QuantFailureNode"}
+  ],
+  "paths": [
+    {"name": "ControlLifecycle", "path": [{"id": "strategy_control", "edge": ""}]},
+    {"name": "ValidTick", "path": [
+      {"id": "market_ingress", "edge": "QuantFlowToken", "condition": "valid"},
+      {"id": "calculate_indicator", "edge": "QuantFlowToken", "condition": "ok"},
+      {"id": "generate_signal", "edge": ""}
+    ]},
+    {"name": "BuySignal", "path": [
+      {"id": "generate_signal", "edge": "QuantFlowToken", "condition": "buy"},
+      {"id": "check_risk", "edge": ""}
+    ]},
+    {"name": "SellSignal", "path": [
+      {"id": "generate_signal", "edge": "QuantFlowToken", "condition": "sell"},
+      {"id": "check_risk", "edge": ""}
+    ]},
+    {"name": "HoldSignal", "path": [
+      {"id": "generate_signal", "edge": "QuantFlowToken", "condition": "hold"},
+      {"id": "persist_snapshot", "edge": ""}
+    ]},
+    {"name": "RiskApproved", "path": [
+      {"id": "check_risk", "edge": "QuantFlowToken", "condition": "approved"},
+      {"id": "create_order", "edge": "QuantFlowToken", "condition": "created"},
+      {"id": "execute_order", "edge": ""}
+    ]},
+    {"name": "RiskRejected", "path": [
+      {"id": "check_risk", "edge": "QuantFlowToken", "condition": "rejected"},
+      {"id": "persist_snapshot", "edge": ""}
+    ]},
+    {"name": "ExecutionFilled", "path": [
+      {"id": "execute_order", "edge": "QuantFlowToken", "condition": "filled"},
+      {"id": "update_portfolio", "edge": "QuantFlowToken", "condition": "updated"},
+      {"id": "persist_snapshot", "edge": ""}
+    ]},
+    {"name": "ExecutionRejected", "path": [
+      {"id": "execute_order", "edge": "QuantFlowToken", "condition": "rejected"},
+      {"id": "persist_snapshot", "edge": ""}
+    ]},
+    {"name": "PersistedCycle", "path": [
+      {"id": "persist_snapshot", "edge": "QuantFlowToken", "condition": "persisted"},
+      {"id": "cycle_complete", "edge": ""}
+    ]},
+    {"name": "TickLimit", "path": [
+      {"id": "market_ingress", "edge": "QuantFlowToken", "condition": "limit"},
+      {"id": "cycle_complete", "edge": ""}
+    ]},
+    {"name": "InvalidTick", "path": [
+      {"id": "market_ingress", "edge": "QuantFlowToken", "condition": "invalid"},
+      {"id": "failure_terminal", "edge": ""}
+    ]},
+    {"name": "IndicatorError", "path": [
+      {"id": "calculate_indicator", "edge": "QuantFlowToken", "condition": "error"},
+      {"id": "failure_terminal", "edge": ""}
+    ]},
+    {"name": "SignalError", "path": [
+      {"id": "generate_signal", "edge": "QuantFlowToken", "condition": "error"},
+      {"id": "failure_terminal", "edge": ""}
+    ]},
+    {"name": "RiskError", "path": [
+      {"id": "check_risk", "edge": "QuantFlowToken", "condition": "error"},
+      {"id": "failure_terminal", "edge": ""}
+    ]},
+    {"name": "OrderError", "path": [
+      {"id": "create_order", "edge": "QuantFlowToken", "condition": "error"},
+      {"id": "failure_terminal", "edge": ""}
+    ]},
+    {"name": "ExecutionError", "path": [
+      {"id": "execute_order", "edge": "QuantFlowToken", "condition": "error"},
+      {"id": "failure_terminal", "edge": ""}
+    ]},
+    {"name": "PortfolioError", "path": [
+      {"id": "update_portfolio", "edge": "QuantFlowToken", "condition": "error"},
+      {"id": "failure_terminal", "edge": ""}
+    ]},
+    {"name": "PersistenceError", "path": [
+      {"id": "persist_snapshot", "edge": "QuantFlowToken", "condition": "error"},
+      {"id": "failure_terminal", "edge": ""}
+    ]}
+  ]
+}

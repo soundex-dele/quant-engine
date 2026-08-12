@@ -1,0 +1,13 @@
+{
+  "symbol": "DEMO",
+  "workflow_path": "examples/quant_trading_workflow.json",
+  "short_window": 3,
+  "long_window": 5,
+  "order_quantity": 10.0,
+  "starting_cash": 100000.0,
+  "max_position": 100.0,
+  "max_order_notional": 25000.0,
+  "slippage_bps": 1.0,
+  "max_ticks": 1000,
+  "allow_short": false
+}
